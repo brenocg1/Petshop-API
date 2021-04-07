@@ -17,24 +17,35 @@ namespace petshop.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly PetOwnerController _petOwnerController;
+        private readonly HousingController _housingController;
 
-        public PetController(IConfiguration configuration, PetOwnerController petOwnerController)
+        public PetController(
+            IConfiguration configuration,
+            PetOwnerController petOwnerController,
+            HousingController housingController)
         {
             _configuration = configuration;
             _petOwnerController = petOwnerController;
+            _housingController = housingController;
         }
 
-        [HttpGet]
-        public async Task<IEnumerable<Pet>> GetAllPets()
+
+
+        //Inserir dados do pet (Informar em que alojamento ele está)
+        //Editar dados do pet
+        //Delete Pet
+        //Consulta de Pet
+
+        [HttpGet("[action]")]
+        public async Task<IList<Pet>> GetAllPets()
         {
-            using (var context = new DBPetContext())
+            using(var context = new DBPetContext())
             {
                 return await context.Pets.ToListAsync();
             }
         }
 
-        [HttpGet]
-        [Route("GetById")]
+        [HttpGet("[action]")]
         public Pet GetPetById([FromQuery] long id)
         {
             using (var context = new DBPetContext())
@@ -43,24 +54,65 @@ namespace petshop.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("Create")]
-        public async Pet CreatePet([FromBody] CreatePetRequest request)
+        //set pet owner name as unique
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> DeletePetById([FromQuery] long id)
         {
-            using (var context = new DBPetContext())
+            try
             {
-                var pet = new Pet();
+                using (var context = new DBPetContext())
+                {
+                    var pet = context.Pets.Where(x => x.Id == id).FirstOrDefault();
+                    var house = await context.Housings.Where(x => x.IdPet == pet.Id).FirstOrDefaultAsync();
+                    //liberando o alojamento antes de excluir o animal
+                    if(house != null)
+                    {
+                        house.IdPet = null;
+                    }
 
-                await _petOwnerController.CreatePetOwner(request);
+                    //deletando o animal
+                    context.Remove(pet);
+                    context.SaveChanges();
+                }
 
-                //return context.Pets.Where(x => x.Id == id).FirstOrDefault();
+                return NoContent();
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
             }
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<int>> CreatePet([FromBody] CreatePetRequest request)
+        {
+            try
+            {
+                if (await _housingController.isFull())
+                {
+                    return NoContent();
+                }
 
-        //Inserir dados do pet (Informar em que alojamento ele está)
-        //Editar dados do pet
-        //Delete Pet
-        //Consulta de Pet
+                var pet = new Pet() {
+                    IdPetOwner = request.PetOwnerId,
+                    Name = request.Name,
+                    HealthCondition = request.HealthCondition,
+                    ReasonForHospitalization = request.ReasonForHospitalization
+                };
+
+                using (var context = new DBPetContext())
+                {
+                    await context.AddAsync(pet);
+                    await context.SaveChangesAsync();
+
+                    return await _housingController.GetFirstEmptyHousing(pet.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
     }
 }

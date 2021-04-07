@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using petshop.ModelsEF;
 using petshop.Requests;
@@ -21,28 +22,54 @@ namespace petshop.Controllers
             _configuration = configuration;
         }
 
-        [HttpPut]
-        [Route("Create")]
-        public async Task<PetOwner> CreatePetOwner([FromBody] CreatePetRequest request)
+        [HttpGet("[action]")]
+        public PetOwner GetPetOwnerById([FromQuery] long id)
         {
             using (var context = new DBPetContext())
             {
-                var petOwner = new PetOwner() {
-                    Name = request.PetOwnerName,
-                    Address = request.PetOwnerAddress,
-                    PhoneNumber = request.PetOwnetPhoneNumber
-                };
-
-                context.Add(petOwner);
-                await context.SaveChangesAsync();
-
-                return petOwner;
+                return context.PetOwners.Where(x => x.Id == id).FirstOrDefault();
             }
         }
+
 
         //Inserir dados do Dono do pet
         //Editar dados do Dono
         //Consulta de Dono
+
+        [HttpPut("[action]")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<IActionResult> CreatePetOwner(CreatePetOwnerRequest request)
+        {
+            var PetOwner = new PetOwner() {
+                Name = request.Name,
+                Address = request.Address,
+                PhoneNumber = request.PhoneNumber
+            } ;
+            try
+            {
+                using (var context = new DBPetContext())
+                {
+                    context.Add(PetOwner);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+
+            return CreatedAtAction(nameof(GetPetOwnerById), new { id = PetOwner.Id }, PetOwner);
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<IList<PetOwner>> GetAllPetOwners()
+        {
+            using (var context = new DBPetContext())
+            {
+                return await context.PetOwners.ToListAsync();
+            }
+        }
 
     }
 }

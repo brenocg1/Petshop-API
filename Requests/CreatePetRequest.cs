@@ -7,11 +7,9 @@ namespace petshop.Requests
 {
     public class CreatePetRequest
     {
-        public string PetName { get; set; }
-        public string PetOwnerName { get; set; }
-        public string PetOwnerAddress { get; set; }
-        public string PetOwnetPhoneNumber { get; set; }
+        public int PetOwnerId { get; set; }
+        public string Name { get; set; }
         public string ReasonForHospitalization { get; set; }
-        public string HealthStatus { get; set; }
+        public string HealthCondition { get; set; }
     }
 }

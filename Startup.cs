@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.OpenApi.Models;
+using petshop.Controllers;
 
 namespace petshop
 {
@@ -42,16 +43,21 @@ namespace petshop
 
             services.AddControllers();
 
+            // estou pegando essa controller na PetController via injeção de dependencia
+            services.AddTransient<PetOwnerController>();
+            services.AddTransient<PetController>();
+            services.AddTransient<HousingController>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "`PetShop Atlantico API",
+                    Title = "PetShop Atlantico API",
                     Version = "v1",
                     Description = "Basic API for a PetShop made for Atlantico :)",
                     Contact = new OpenApiContact
                     {
-                        Name = "Breno Campos",
+                        Name = "Atlântico",
                         Email = "brenocg@alu.ufc.br",
                         Url = new Uri("https://www.atlantico.com.br/"),
                     },

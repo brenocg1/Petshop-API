@@ -32,6 +32,8 @@ namespace petshop.ModelsEF
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<PetOwner>().ToTable("PetOwner");
+
             modelBuilder.HasAnnotation("Relational:Collation", "Latin1_General_CI_AI");
 
             modelBuilder.Entity<Housing>(entity =>
@@ -48,17 +50,20 @@ namespace petshop.ModelsEF
             {
                 entity.ToTable("Pet");
 
+                entity.Property(e => e.HealthCondition).HasMaxLength(100);
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100);
 
                 entity.Property(e => e.ProfilePhotoFileName).HasMaxLength(100);
 
-                entity.Property(e => e.ReasonForHospitalizaion).HasMaxLength(100);
+                entity.Property(e => e.ReasonForHospitalization).HasMaxLength(100);
 
                 entity.HasOne(d => d.IdPetOwnerNavigation)
                     .WithMany(p => p.Pets)
                     .HasForeignKey(d => d.IdPetOwner)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Pet_PetOwner");
             });
 
