@@ -16,16 +16,13 @@ namespace petshop.Controllers
     public class PetController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        private readonly PetOwnerController _petOwnerController;
         private readonly HousingController _housingController;
 
         public PetController(
             IConfiguration configuration,
-            PetOwnerController petOwnerController,
             HousingController housingController)
         {
             _configuration = configuration;
-            _petOwnerController = petOwnerController;
             _housingController = housingController;
         }
 

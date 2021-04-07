@@ -16,10 +16,12 @@ namespace petshop.Controllers
     public class PetOwnerController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly PetController _petController;
 
-        public PetOwnerController(IConfiguration configuration)
+        public PetOwnerController(IConfiguration configuration, PetController petController)
         {
             _configuration = configuration;
+            _petController = petController;
         }
 
         [HttpGet("[action]")]
@@ -31,10 +33,7 @@ namespace petshop.Controllers
             }
         }
 
-
         //Inserir dados do Dono do pet
-        //Editar dados do Dono
-        //Consulta de Dono
 
         [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -44,7 +43,7 @@ namespace petshop.Controllers
                 Name = request.Name.Trim(),
                 Address = request.Address.Trim(),
                 PhoneNumber = request.PhoneNumber.Trim()
-            } ;
+            };
             try
             {
                 using (var context = new DBPetContext())
@@ -61,13 +60,49 @@ namespace petshop.Controllers
             return CreatedAtAction(nameof(GetPetOwnerById), new { id = PetOwner.Id }, PetOwner);
         }
 
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> DeletePetOwner(int id)
+        {
+            try
+            {
+                using (var context = new DBPetContext())
+                {
+                    var owner = await context.PetOwners
+                        .Where(x => x.Id == id)
+                        .Include(x => x.Pets)
+                        .FirstOrDefaultAsync();
+
+                    if(owner == null)
+                    {
+                        return NotFound();
+                    }
+                    
+                    if(owner.Pets.Count > 0)
+                    {
+                        foreach (var pet in owner.Pets)
+                        {
+                            await _petController.DeletePetById(pet.Id);
+                        }
+                    }
+
+                    context.Remove(owner);
+                    context.SaveChanges();
+                }
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
 
         [HttpGet("[action]")]
         public async Task<IList<PetOwner>> GetAllPetOwners()
         {
             using (var context = new DBPetContext())
             {
-                return await context.PetOwners.ToListAsync();
+                return await context.PetOwners.Include(x => x.Pets).ToListAsync();
             }
         }
 

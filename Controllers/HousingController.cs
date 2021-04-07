@@ -77,6 +77,7 @@ namespace petshop.Controllers
 
                         if (house.IdPet == null)
                         {
+                            element.Status = "Livre";
                             listViewModel.Add(element);
                             continue;
                         }
@@ -85,10 +86,6 @@ namespace petshop.Controllers
                             house.IdPetNavigation.HealthCondition ==  "Se Recuperando")
                         {
                             element.Status = "Ocupado";
-                        }
-                        else if(element.IdPet == null)
-                        {
-                            element.Status = "Livre";
                         }
                         else
                         {
