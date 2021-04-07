@@ -36,14 +36,14 @@ namespace petshop.Controllers
         //Editar dados do Dono
         //Consulta de Dono
 
-        [HttpPut("[action]")]
+        [HttpPost("[action]")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         public async Task<IActionResult> CreatePetOwner(CreatePetOwnerRequest request)
         {
             var PetOwner = new PetOwner() {
-                Name = request.Name,
-                Address = request.Address,
-                PhoneNumber = request.PhoneNumber
+                Name = request.Name.Trim(),
+                Address = request.Address.Trim(),
+                PhoneNumber = request.PhoneNumber.Trim()
             } ;
             try
             {

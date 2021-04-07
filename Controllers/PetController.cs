@@ -31,10 +31,26 @@ namespace petshop.Controllers
 
 
 
-        //Inserir dados do pet (Informar em que alojamento ele está)
+        //Inserir dados do pet (Informar em que alojamento ele está) OK
         //Editar dados do pet
-        //Delete Pet
+        //Delete Pet OK
         //Consulta de Pet
+
+        [HttpGet("[action]")]
+        public async Task<IList<Pet>> SearchPet([FromQuery] string name)
+        {
+            try
+            {
+                using (var context = new DBPetContext())
+                {
+                    return await context.Pets.Where(x => x.Name.Contains(name.Trim())).ToListAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+        }
 
         [HttpGet("[action]")]
         public async Task<IList<Pet>> GetAllPets()
@@ -91,14 +107,14 @@ namespace petshop.Controllers
             {
                 if (await _housingController.isFull())
                 {
-                    return NoContent();
+                    return -1;
                 }
 
                 var pet = new Pet() {
                     IdPetOwner = request.PetOwnerId,
-                    Name = request.Name,
-                    HealthCondition = request.HealthCondition,
-                    ReasonForHospitalization = request.ReasonForHospitalization
+                    Name = request.Name.Trim(),
+                    HealthCondition = request.HealthCondition.Trim(),
+                    ReasonForHospitalization = request.ReasonForHospitalization.Trim()
                 };
 
                 using (var context = new DBPetContext())
