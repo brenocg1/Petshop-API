@@ -62,11 +62,11 @@ namespace petshop.Controllers
         }
 
         [HttpGet("[action]")]
-        public Pet GetPetById([FromQuery] long id)
+        public async Task<Pet> GetPetById([FromQuery] long id)
         {
             using (var context = new DBPetContext())
             {
-                return context.Pets.Where(x => x.Id == id).FirstOrDefault();
+                return await context.Pets.FirstOrDefaultAsync(x => x.Id == id);
             }
         }
 
@@ -98,6 +98,36 @@ namespace petshop.Controllers
             {
                 throw new Exception(ex.InnerException.Message);
             }
+        }
+
+        [HttpPut("[action]")]
+        public async Task<IActionResult> UpdatePet([FromBody] UpdatePetRequest request)
+        {
+
+            try
+            {
+                using (var context = new DBPetContext())
+                {
+                    var pet = await this.GetPetById(request.PetId);
+
+                    if(pet == null)
+                    {
+                        return BadRequest();
+                    }
+
+                    pet.HealthCondition = request.HealthCondition;
+                    pet.Name = request.Name;
+                    pet.ReasonForHospitalization = request.ReasonForHospitalization;
+                    context.Update(pet);
+                    await context.SaveChangesAsync();
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+
         }
 
         [HttpPost("[action]")]

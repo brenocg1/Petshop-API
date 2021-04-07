@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using petshop.ModelsEF;
+using petshop.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,12 +59,53 @@ namespace petshop.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IList<Housing>> GetAllHousings()
+        public async Task<IList<HousingsViewModel>> GetAllHousings()
         {
-            using (var context = new DBPetContext())
+
+            try
             {
-                return await context.Housings.ToListAsync();
+                using (var context = new DBPetContext())
+                {
+                    var housings = await context.Housings.Include(x => x.IdPetNavigation).ToListAsync();
+                    var listViewModel = new List<HousingsViewModel>();
+                    foreach (var house in housings)
+                    {
+                        var element = new HousingsViewModel();
+                        element.Id = house.Id;
+                        element.IdPet = house.IdPet;
+                        element.Number = house.Number.Value;
+
+                        if (house.IdPet == null)
+                        {
+                            listViewModel.Add(element);
+                            continue;
+                        }
+
+                        if(house.IdPetNavigation.HealthCondition == "Em Tratamento" ||
+                            house.IdPetNavigation.HealthCondition ==  "Se Recuperando")
+                        {
+                            element.Status = "Ocupado";
+                        }
+                        else if(element.IdPet == null)
+                        {
+                            element.Status = "Livre";
+                        }
+                        else
+                        {
+                            element.Status = "Esperando o dono";
+                        }
+
+                        listViewModel.Add(element);
+                    }
+
+                    return listViewModel;
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.InnerException.Message);
+            }
+
         }
 
         //Pegar alojamento vago
