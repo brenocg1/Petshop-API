@@ -3,7 +3,7 @@
 Projeto Desafio do Atlatico
 
 ## Development server
-Rode em modo API
+Rode no IIS Express
 
 ## O que você precisa para rodar
 Visual Studio Community, você pode baixar em https://visualstudio.microsoft.com/pt-br/
