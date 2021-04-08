@@ -66,7 +66,10 @@ namespace petshop.Controllers
             {
                 using (var context = new DBPetContext())
                 {
-                    var housings = await context.Housings.Include(x => x.IdPetNavigation).ToListAsync();
+                    var housings = await context.Housings
+                        .Include(x => x.IdPetNavigation)
+                        .ThenInclude(x => x.IdPetOwnerNavigation)
+                        .ToListAsync();
                     var listViewModel = new List<HousingsViewModel>();
                     foreach (var house in housings)
                     {
@@ -81,6 +84,9 @@ namespace petshop.Controllers
                             listViewModel.Add(element);
                             continue;
                         }
+
+                        element.PetName = house.IdPetNavigation.Name;
+                        element.PetOwnerName = house.IdPetNavigation.IdPetOwnerNavigation.Name;
 
                         if(house.IdPetNavigation.HealthCondition == "Em Tratamento" ||
                             house.IdPetNavigation.HealthCondition ==  "Se Recuperando")
