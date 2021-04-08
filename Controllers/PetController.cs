@@ -15,6 +15,7 @@ namespace petshop.Controllers
     [ApiController]
     public class PetController : ControllerBase
     {
+        // configure IoC
         private readonly IConfiguration _configuration;
         private readonly HousingController _housingController;
 
