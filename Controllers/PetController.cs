@@ -63,7 +63,9 @@ namespace petshop.Controllers
         {
             using (var context = new DBPetContext())
             {
-                return await context.Pets.FirstOrDefaultAsync(x => x.Id == id);
+                var pet =  await context.Pets.FirstOrDefaultAsync(x => x.Id == id);
+
+                return pet;
             }
         }
 
