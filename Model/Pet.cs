@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-#nullable disable
-
-namespace petshop.ModelsEF
+namespace PetShop.Model
 {
-    public partial class Pet
+    public class Pet : Entity
     {
         public Pet()
         {
             Housings = new HashSet<Housing>();
         }
 
-        public int Id { get; set; }
         public int IdPetOwner { get; set; }
         public string Name { get; set; }
         public string ReasonForHospitalization { get; set; }

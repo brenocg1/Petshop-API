@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "petshop": {
+    "PetShop": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "",

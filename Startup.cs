@@ -1,19 +1,15 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.OpenApi.Models;
-using petshop.Controllers;
+using PetShop.Repository;
+using Microsoft.EntityFrameworkCore;
+using PetShop.Repository.Interfaces;
 
-namespace petshop
+namespace PetShop
 {
     public class Startup
     {
@@ -24,30 +20,16 @@ namespace petshop
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
-        {
-
-            //habilitando CORS
-            //permitindo qualquer origin fazer request, com qualquer método e header
-            //Não aconselhavel por motivos de segunrança 
-            services.AddCors(c =>
-            {
-                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-            });
-
-            //JSON Serializer como default
-            services.AddControllersWithViews().AddNewtonsoftJson(options => 
-            options.SerializerSettings.ReferenceLoopHandling=Newtonsoft.Json.ReferenceLoopHandling.Ignore)
-                .AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
-
-            services.AddControllers();
-
-            // estou pegando essa controller na PetController via injeção de dependencia
-            services.AddTransient<PetOwnerController>();
-            services.AddTransient<PetController>();
-            services.AddTransient<HousingController>();
-
+        {               
+            services.AddCors();
+            services.AddControllers()
+                    .AddNewtonsoftJson();
+            services.AddDbContext<PetDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("PetshopAppCon")));
+            services.AddScoped<IPetRepository, PetRepository>();
+            services.AddScoped<IPetOwnerRepository, PetOwnerRepository>();
+            services.AddScoped<IHousingRepository, HousingRepository>();
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -57,7 +39,7 @@ namespace petshop
                     Description = "Basic API for a PetShop made for Atlantico :)",
                     Contact = new OpenApiContact
                     {
-                        Name = "Atlântico",
+                        Name = "Atlantico",
                         Email = "brenocg@alu.ufc.br",
                         Url = new Uri("https://www.atlantico.com.br/"),
                     },
@@ -65,31 +47,29 @@ namespace petshop
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseRouting();
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
             app.UseSwagger();
 
-            app.UseSwaggerUI(c =>
-            {
+            app.UseSwaggerUI(c => {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "PetShop Atlantico API V1");
                 c.RoutePrefix = string.Empty;
             });
 
-            app.UseRouting();
-
+    
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
+            app.UseEndpoints(endpoints => {
                 endpoints.MapControllers();
             });
         }
