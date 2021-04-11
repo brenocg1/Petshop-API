@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace petshop.Requests
+﻿
+namespace PetShop.Requests
 {
     public class CreatePetRequest
     {
